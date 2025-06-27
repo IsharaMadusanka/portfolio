@@ -1,5 +1,15 @@
-
 import React, { useEffect, useRef, useState } from 'react';
+
+const skillIcons: { [key: string]: string } = {
+  'JavaScript/TypeScript': '🟨',
+  'React/Next.js': '⚛️',
+  'Node.js/Express': '🟩',
+  'Python/Django': '🐍',
+  'Database Design': '🗄️',
+  'UI/UX Design': '🎨',
+  'DevOps/AWS': '☁️',
+  'Mobile Development': '📱',
+};
 
 const Skills = () => {
   const [isVisible, setIsVisible] = useState(false);
@@ -40,17 +50,60 @@ const Skills = () => {
     return () => observer.disconnect();
   }, []);
 
+  // Helper for circular progress
+  const getCircle = (level: number, color: string, animated: boolean) => {
+    const radius = 40;
+    const stroke = 8;
+    const normalizedRadius = radius - stroke / 2;
+    const circumference = normalizedRadius * 2 * Math.PI;
+    const progress = animated ? (level / 100) * circumference : 0;
+    return (
+      <svg height={radius * 2} width={radius * 2} className="block mx-auto">
+        <circle
+          stroke="#334155"
+          fill="none"
+          strokeWidth={stroke}
+          cx={radius}
+          cy={radius}
+          r={normalizedRadius}
+        />
+        <circle
+          strokeDasharray={circumference}
+          strokeDashoffset={circumference - progress}
+          strokeLinecap="round"
+          fill="none"
+          strokeWidth={stroke}
+          cx={radius}
+          cy={radius}
+          r={normalizedRadius}
+          className={`transition-all duration-1000 ${color.replace('from-', 'stroke-').replace(' to-', ' ')} `}
+          style={{ stroke: 'url(#gradient)' }}
+        />
+        <defs>
+          <linearGradient id="gradient" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0%" stopColor="#60a5fa" />
+            <stop offset="100%" stopColor="#a78bfa" />
+          </linearGradient>
+        </defs>
+      </svg>
+    );
+  };
+
   return (
     <section 
       id="skills" 
       ref={sectionRef}
-      className="py-20 bg-slate-950"
+      className="py-20 bg-slate-950 bg-opacity-90 backdrop-blur-xl relative overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute -top-32 -left-32 w-96 h-96 bg-gradient-to-br from-blue-500/30 to-purple-500/10 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-gradient-to-tr from-pink-500/20 to-blue-400/10 rounded-full blur-2xl"></div>
+      </div>
+      <div className="relative max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-16 transition-all duration-1000 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent">
+          <h2 className="text-4xl md:text-5xl font-extrabold mb-6 bg-gradient-to-r from-blue-400 to-purple-500 bg-clip-text text-transparent drop-shadow-lg">
             Skills & Expertise
           </h2>
           <p className="text-xl text-slate-300 max-w-3xl mx-auto">
@@ -58,57 +111,51 @@ const Skills = () => {
           </p>
         </div>
 
-        <div className="grid md:grid-cols-2 gap-8">
+        <div className="grid md:grid-cols-4 sm:grid-cols-2 gap-10">
           {skills.map((skill, index) => (
             <div
               key={skill.name}
               className={`transition-all duration-1000 delay-${index * 100} ${
                 isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              } bg-slate-800/60 backdrop-blur-lg rounded-2xl p-8 border border-slate-700/40 shadow-xl hover:shadow-blue-500/20 hover:scale-105 hover:border-blue-400/40 flex flex-col items-center`}
             >
-              <div className="bg-slate-800/50 backdrop-blur-sm rounded-xl p-6 border border-slate-700/50 hover:border-blue-500/30 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/10">
-                <div className="flex justify-between items-center mb-3">
-                  <h3 className="text-lg font-semibold text-white">{skill.name}</h3>
-                  <span className="text-slate-400 text-sm">{skill.level}%</span>
-                </div>
-                
-                <div className="w-full bg-slate-700 rounded-full h-3 overflow-hidden">
-                  <div
-                    className={`h-full bg-gradient-to-r ${skill.color} rounded-full transition-all duration-1500 ease-out ${
-                      animatedSkills[skill.name] ? `w-[${skill.level}%]` : 'w-0'
-                    }`}
-                    style={{ width: animatedSkills[skill.name] ? `${skill.level}%` : '0%' }}
-                  >
-                    <div className="h-full w-full bg-gradient-to-r from-white/20 to-transparent rounded-full"></div>
-                  </div>
-                </div>
+              <div className="mb-4 text-4xl">
+                {skillIcons[skill.name] || '💡'}
               </div>
+              <div className="relative mb-4">
+                {getCircle(skill.level, skill.color, animatedSkills[skill.name])}
+                <span className="absolute inset-0 flex items-center justify-center text-xl font-bold text-white">
+                  {skill.level}%
+                </span>
+              </div>
+              <h3 className="text-lg font-semibold text-white text-center mt-2 drop-shadow">
+                {skill.name}
+              </h3>
             </div>
           ))}
         </div>
 
         {/* Tech Icons */}
-        <div className={`mt-16 transition-all duration-1000 delay-500 ${
+        <div className={`mt-20 transition-all duration-1000 delay-500 ${
           isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
         }`}>
           <div className="grid grid-cols-4 md:grid-cols-8 gap-8 items-center justify-items-center">
             {[
-              { name: 'React', color: 'text-blue-400' },
-              { name: 'Node.js', color: 'text-green-400' },
-              { name: 'Python', color: 'text-yellow-400' },
-              { name: 'TypeScript', color: 'text-blue-500' },
-              { name: 'MongoDB', color: 'text-green-500' },
-              { name: 'AWS', color: 'text-orange-400' },
-              { name: 'Docker', color: 'text-blue-600' },
-              { name: 'GraphQL', color: 'text-pink-400' }
+              { name: 'React', color: 'text-blue-400', icon: '⚛️' },
+              { name: 'Node.js', color: 'text-green-400', icon: '🟩' },
+              { name: 'Python', color: 'text-yellow-400', icon: '🐍' },
+              { name: 'TypeScript', color: 'text-blue-500', icon: '🟦' },
+              { name: 'MongoDB', color: 'text-green-500', icon: '🍃' },
+              { name: 'AWS', color: 'text-orange-400', icon: '☁️' },
+              { name: 'Docker', color: 'text-blue-600', icon: '🐳' },
+              { name: 'GraphQL', color: 'text-pink-400', icon: '🕸️' }
             ].map((tech, index) => (
               <div
                 key={tech.name}
-                className={`w-16 h-16 rounded-xl bg-slate-800/50 backdrop-blur-sm border border-slate-700/50 flex items-center justify-center hover:scale-110 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 delay-${index * 50}`}
+                className={`w-20 h-20 rounded-2xl bg-slate-800/60 backdrop-blur-lg border border-slate-700/40 flex flex-col items-center justify-center hover:scale-110 hover:border-blue-500/50 transition-all duration-300 hover:shadow-lg hover:shadow-blue-500/20 delay-${index * 50} shadow-md`}
               >
-                <span className={`text-2xl font-bold ${tech.color}`}>
-                  {tech.name.charAt(0)}
-                </span>
+                <span className={`text-3xl mb-1 ${tech.color}`}>{tech.icon}</span>
+                <span className="text-xs text-slate-300 font-semibold">{tech.name}</span>
               </div>
             ))}
           </div>
